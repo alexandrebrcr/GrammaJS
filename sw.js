@@ -1,5 +1,11 @@
 const CACHE_NAME = 'conlang-v1';
-const ASSETS = ['./', './index.html', './style.css', './app.js', './dictionary.json', './manifest.json'];
+const ASSETS = [
+    './',
+    './index.html',
+    './style.css',
+    './app.js',
+    './dictionary.json',
+    './manifest.json'];
 
 self.addEventListener('install', (e) => {
     e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));

@@ -1,7 +1,7 @@
 let config = {};
 
 // Charger le dictionnaire
-fetch('dict.json')
+fetch('dictionary.json')
     .then(response => response.json())
     .then(data => config = data);
 

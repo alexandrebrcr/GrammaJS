@@ -1,0 +1,13 @@
+{
+  "lexique": {
+    "manger": "vorak",
+    "chat": "miu",
+    "pomme": "poma",
+    "je": "ego"
+  },
+  "grammaire": {
+    "futur": "lo",
+    "passe": "ka",
+    "pluriel": "s"
+  }
+}

@@ -73,15 +73,6 @@ h1 {
     margin-top: 18px;
 }
 
-.badges span {
-    padding: 8px 12px;
-    border-radius: 999px;
-    background: rgba(125, 226, 223, 0.12);
-    border: 1px solid rgba(125, 226, 223, 0.22);
-    color: #d6ffff;
-    font-size: 0.9rem;
-}
-
 .translator-card {
     display: flex;
     flex-direction: column;

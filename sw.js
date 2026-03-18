@@ -1,4 +1,4 @@
-const CACHE_NAME = 'grammajs-v5';
+const CACHE_NAME = 'grammajs-v6';
 const ASSETS = [
     './',
     './index.html',

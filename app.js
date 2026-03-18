@@ -33,7 +33,7 @@ const IRREGULAR_VERB_FORMS = {
         imperfect: ['avais', 'avais', 'avait', 'avions', 'aviez', 'avaient'],
         participle: ['eu', 'eue', 'eus', 'eues']
     },
-    etre: {
+    être: {
         present: ['suis', 'es', 'est', 'sommes', 'etes', 'êtes', 'sont'],
         future: ['serai', 'seras', 'sera', 'serons', 'serez', 'seront'],
         imperfect: ['etais', 'etais', 'etait', 'etions', 'etiez', 'etaient'],
@@ -44,12 +44,6 @@ const IRREGULAR_VERB_FORMS = {
         future: ['ferai', 'feras', 'fera', 'ferons', 'ferez', 'feront'],
         imperfect: ['faisais', 'faisais', 'faisait', 'faisions', 'faisiez', 'faisaient'],
         participle: ['fait', 'faite', 'faits', 'faites']
-    },
-    venir: {
-        present: ['viens', 'viens', 'vient', 'venons', 'venez', 'viennent'],
-        future: ['viendrai', 'viendras', 'viendra', 'viendrons', 'viendrez', 'viendront'],
-        imperfect: ['venais', 'venais', 'venait', 'venions', 'veniez', 'venaient'],
-        participle: ['venu', 'venue', 'venus', 'venues']
     },
     pouvoir: {
         present: ['peux', 'peux', 'peut', 'pouvons', 'pouvez', 'peuvent'],
@@ -75,17 +69,17 @@ const IRREGULAR_VERB_FORMS = {
         imperfect: ['voyais', 'voyais', 'voyait', 'voyions', 'voyiez', 'voyaient'],
         participle: ['vu']
     },
+    boire: {
+        present: ['bois', 'bois', 'boit', 'buvons', 'buvez', 'boivent'],
+        future: ['boirai', 'boiras', 'boira', 'boirons', 'boirez', 'boiront'],
+        imperfect: ['buvais', 'buvais', 'buvait', 'buvions', 'buviez', 'buvtaient'],
+        participle: ['bu']
+    },
     prendre: {
         present: ['prends', 'prends', 'prend', 'prenons', 'prenez', 'prennent'],
         future: ['prendrai', 'prendras', 'prendra', 'prendrons', 'prendrez', 'prendront'],
         imperfect: ['prenais', 'prenais', 'prenait', 'prenions', 'preniez', 'prenaient'],
         participle: ['pris']
-    },
-    dire: {
-        present: ['dis', 'dis', 'dit', 'disons', 'dites', 'disent'],
-        future: ['dirai', 'diras', 'dira', 'dirons', 'direz', 'diront'],
-        imperfect: ['disais', 'disais', 'disait', 'disions', 'disiez', 'disaient'],
-        participle: ['dit']
     },
     dormir: {
         present: ['dors', 'dors', 'dort', 'dormons', 'dormez', 'dorment'],
@@ -104,6 +98,30 @@ const IRREGULAR_VERB_FORMS = {
         future: ['mettrai', 'mettras', 'mettra', 'mettrons', 'mettrez', 'mettront'],
         imperfect: ['mettais', 'mettais', 'mettait', 'mettions', 'mettiez', 'mettaient'],
         participle: ['mis']
+    },
+    decendre: {
+        present: ['descends', 'descends', 'descend', 'descendons', 'descendez', 'descendent'],
+        future: ['descendrai', 'descendras', 'descendra', 'descendrons', 'descendrez', 'descendront'],
+        imperfect: ['descendais', 'descendais', 'descendait', 'descendions', 'descendiez', 'descendaient'],
+        participle: ['descendu']
+    },
+    eteindre: {
+        present: ['eteins', 'eteins', 'eteint', 'eteignons', 'eteignez', 'eteignent'],
+        future: ['eteindrai', 'eteindras', 'eteindra', 'eteindrons', 'eteindrez', 'eteindront'],
+        imperfect: ['eteignais', 'eteignais', 'eteignait', 'eteignions', 'eteigniez', 'eteignaient'],
+        participle: ['eteint']
+    },
+    rire: {
+        present: ['rie', 'ries', 'rit', 'rions', 'riez', 'rient'],
+        future: ['rirai', 'riras', 'rira', 'rirons', 'ririez', 'riront'],
+        imperfect: ['riais', 'riais', 'riait', 'riions', 'riiez', 'riaient'],
+        participle: ['ri']
+    },
+    promettre: {
+        present: ['promets', 'promets', 'promet', 'promettons', 'promettez', 'promettent'],
+        future: ['promettrai', 'promettras', 'promettra', 'promettrons', 'promettrez', 'promettront'],
+        imperfect: ['promettais', 'promettais', 'promettait', 'promettions', 'promettiez', 'promettaient'],
+        participle: ['promis']
     }
 };
 

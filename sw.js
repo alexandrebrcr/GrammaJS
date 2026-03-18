@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meniki-v2';
+const CACHE_NAME = 'grammajs-v4';
 const ASSETS = [
     './',
     './index.html',

@@ -1,6 +1,6 @@
 {
-  "name": "Traducteur Meniki",
-  "short_name": "Meniki",
+  "name": "GrammaJS",
+  "short_name": "GrammaJS",
   "description": "Application de traduction Français vers Meniki",
   "start_url": "./index.html",
   "display": "standalone",

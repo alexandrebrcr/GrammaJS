@@ -91,13 +91,6 @@ h1 {
     line-height: 1.6;
 }
 
-.meta-note {
-    margin: 0;
-    color: rgba(244, 247, 251, 0.64);
-    line-height: 1.5;
-    font-size: 0.95rem;
-}
-
 .badges {
     display: flex;
     flex-wrap: wrap;

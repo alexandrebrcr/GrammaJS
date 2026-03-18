@@ -164,42 +164,6 @@ button:active {
     font-style: italic;
 }
 
-.update-banner {
-    position: fixed;
-    right: 20px;
-    bottom: 20px;
-    z-index: 10;
-    max-width: min(420px, calc(100vw - 40px));
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 16px 18px;
-    border-radius: 20px;
-    background: rgba(8, 15, 28, 0.95);
-    border: 1px solid rgba(125, 226, 223, 0.2);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.38);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-}
-
-.update-title {
-    margin: 0 0 4px;
-    font-weight: 700;
-}
-
-.update-text {
-    margin: 0;
-    color: rgba(244, 247, 251, 0.74);
-    line-height: 1.45;
-}
-
-.update-banner button {
-    flex: 0 0 auto;
-    padding: 12px 14px;
-    border-radius: 14px;
-}
-
 .note {
     margin: 0;
     padding: 16px 18px;

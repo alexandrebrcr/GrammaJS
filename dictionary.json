@@ -1,9 +1,14 @@
 {
   "lexique": {
+    "je": "pô",
+    "tu": "tô",
+    "il": "il",
+    "nous": "nô",
+    "vous": "sô",
+    "ils": "ils",
     "manger": "vorak",
     "chat": "miu",
-    "pomme": "poma",
-    "je": "ego"
+    "pomme": "poma"
   },
   "grammaire": {
     "futur": "efu",

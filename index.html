@@ -13,12 +13,20 @@
     <div class="page">
         <main class="container">
             <section class="hero">
-                <p class="eyebrow">Traducteur expérimental</p>
-                <h1>GrammaJS</h1>
+                <div class="hero-brand">
+                    <img class="brand-logo" src="icon-512.png" alt="Logo GrammaJS">
+                    <div>
+                        <p class="eyebrow">Traducteur expérimental</p>
+                        <h1>GrammaJS</h1>
+                    </div>
+                </div>
                 <p class="subtitle">Transformez du Français en Meniki avec GrammaJS grâce à un dictionnaire propre. Le
                     Meniki ne se conjugue pas: on place <strong>efu</strong> devant le verbe pour le futur et
                     <strong>emas</strong> pour le passé. Vous pouvez télécharger l'application pour l'utiliser
-                    en mode hors-ligne.</p>
+                    en mode hors-ligne.
+                </p>
+                <p class="meta-note">Le site s’adapte au mobile et au bureau, et se met à jour automatiquement quand
+                    une nouvelle version est disponible en ligne.</p>
             </section>
 
             <section class="translator-card">
@@ -30,11 +38,64 @@
         </main>
     </div>
 
+    <div class="update-banner" id="updateBanner" hidden>
+        <div>
+            <p class="update-title">Nouvelle version disponible</p>
+            <p class="update-text">Une mise à jour de GrammaJS est prête. Rechargez pour l’appliquer.</p>
+        </div>
+        <button type="button" id="refreshButton">Actualiser</button>
+    </div>
+
     <script src="app.js"></script>
     <script>
-        // Enregistrement du Service Worker pour le mode hors-ligne
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then((registration) => {
+                    const updateBanner = document.getElementById('updateBanner');
+                    const refreshButton = document.getElementById('refreshButton');
+
+                    const showUpdateBanner = () => {
+                        updateBanner.hidden = false;
+                    };
+
+                    if (registration.waiting) {
+                        showUpdateBanner();
+                    }
+
+                    registration.addEventListener('updatefound', () => {
+                        const installingWorker = registration.installing;
+                        if (!installingWorker) {
+                            return;
+                        }
+
+                        installingWorker.addEventListener('statechange', () => {
+                            if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                showUpdateBanner();
+                            }
+                        });
+                    });
+
+                    refreshButton.addEventListener('click', () => {
+                        if (registration.waiting) {
+                            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                        } else {
+                            window.location.reload();
+                        }
+                    });
+
+                    navigator.serviceWorker.addEventListener('controllerchange', () => {
+                        window.location.reload();
+                    });
+
+                    window.addEventListener('online', () => {
+                        registration.update();
+                    });
+
+                    setInterval(() => {
+                        registration.update();
+                    }, 30 * 60 * 1000);
+                }).catch(() => { });
+            });
         }
     </script>
 </body>

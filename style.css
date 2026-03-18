@@ -7,6 +7,7 @@ body {
     min-height: 100vh;
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     color: #f4f7fb;
+    overflow-x: hidden;
     background:
         radial-gradient(circle at top left, rgba(0, 173, 181, 0.28), transparent 32%),
         radial-gradient(circle at right center, rgba(255, 183, 77, 0.18), transparent 26%),
@@ -15,7 +16,7 @@ body {
 
 .page {
     min-height: 100vh;
-    padding: 32px 20px;
+    padding: clamp(20px, 3vw, 40px) 24px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -23,10 +24,11 @@ body {
 
 .container {
     width: 100%;
-    max-width: 720px;
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
+    max-width: 1120px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: 20px;
+    align-items: stretch;
 }
 
 .hero,
@@ -45,6 +47,29 @@ body {
     padding: 24px;
 }
 
+.hero {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 18px;
+}
+
+.hero-brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.brand-logo {
+    width: 76px;
+    height: 76px;
+    border-radius: 22px;
+    object-fit: cover;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    flex: 0 0 auto;
+}
+
 .eyebrow {
     margin: 0 0 10px;
     text-transform: uppercase;
@@ -55,15 +80,22 @@ body {
 
 h1 {
     margin: 0;
-    font-size: clamp(2.5rem, 8vw, 4.4rem);
+    font-size: clamp(2.5rem, 5vw, 4.6rem);
     line-height: 0.95;
 }
 
 .subtitle {
     margin: 14px 0 0;
-    max-width: 56ch;
+    max-width: 64ch;
     color: rgba(244, 247, 251, 0.82);
     line-height: 1.6;
+}
+
+.meta-note {
+    margin: 0;
+    color: rgba(244, 247, 251, 0.64);
+    line-height: 1.5;
+    font-size: 0.95rem;
 }
 
 .badges {
@@ -77,6 +109,8 @@ h1 {
     display: flex;
     flex-direction: column;
     gap: 14px;
+    justify-content: center;
+    min-height: 100%;
 }
 
 label {
@@ -137,6 +171,42 @@ button:active {
     font-style: italic;
 }
 
+.update-banner {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 10;
+    max-width: min(420px, calc(100vw - 40px));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 18px;
+    border-radius: 20px;
+    background: rgba(8, 15, 28, 0.95);
+    border: 1px solid rgba(125, 226, 223, 0.2);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.38);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+.update-title {
+    margin: 0 0 4px;
+    font-weight: 700;
+}
+
+.update-text {
+    margin: 0;
+    color: rgba(244, 247, 251, 0.74);
+    line-height: 1.45;
+}
+
+.update-banner button {
+    flex: 0 0 auto;
+    padding: 12px 14px;
+    border-radius: 14px;
+}
+
 .note {
     margin: 0;
     padding: 16px 18px;
@@ -149,6 +219,12 @@ button:active {
 @media (max-width: 640px) {
     .page {
         padding: 18px 14px;
+        align-items: stretch;
+    }
+
+    .container {
+        grid-template-columns: 1fr;
+        gap: 16px;
     }
 
     .hero,
@@ -157,7 +233,26 @@ button:active {
         border-radius: 20px;
     }
 
+    .hero-brand {
+        align-items: flex-start;
+    }
+
+    .brand-logo {
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+    }
+
     .badges {
         gap: 8px;
+    }
+
+    .update-banner {
+        left: 14px;
+        right: 14px;
+        bottom: 14px;
+        max-width: none;
+        flex-direction: column;
+        align-items: stretch;
     }
 }

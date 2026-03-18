@@ -58,10 +58,6 @@
                         updateBanner.hidden = false;
                     };
 
-                    if (registration.waiting) {
-                        showUpdateBanner();
-                    }
-
                     registration.addEventListener('updatefound', () => {
                         const installingWorker = registration.installing;
                         if (!installingWorker) {

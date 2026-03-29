@@ -332,6 +332,54 @@ function translateLemma(lemma) {
     return key ? config.lexique[key] : null;
 }
 
+function translateNumberToken(token) {
+    if (!/^\d+$/.test(token)) {
+        return null;
+    }
+
+    const directTranslation = lookupDictionaryWord(token);
+    if (directTranslation) {
+        return directTranslation;
+    }
+
+    const numericValue = Number(token);
+    if (!Number.isSafeInteger(numericValue) || numericValue < 0) {
+        return null;
+    }
+
+    if (numericValue === 0) {
+        return lookupDictionaryWord('0');
+    }
+
+    // Current dictionary carries rank words up to thousands.
+    if (numericValue > 9999) {
+        return null;
+    }
+
+    let remainder = numericValue;
+    const segments = [];
+    const places = [1000, 100, 10, 1];
+
+    for (const place of places) {
+        const digit = Math.floor(remainder / place);
+        remainder %= place;
+
+        if (digit === 0) {
+            continue;
+        }
+
+        const key = place === 1 ? `${digit}` : `${digit * place}`;
+        const piece = lookupDictionaryWord(key);
+        if (!piece) {
+            return null;
+        }
+
+        segments.push(piece);
+    }
+
+    return segments.join(' ');
+}
+
 function getVerbInfo(word) {
     return verbFormIndex.get(normalizeLookup(word)) || null;
 }
@@ -365,6 +413,11 @@ function translateStandaloneWord(word) {
         return directTranslation;
     }
 
+    const numberTranslation = translateNumberToken(word);
+    if (numberTranslation) {
+        return numberTranslation;
+    }
+
     const detectedVerb = detectVerb(word);
     if (!detectedVerb) {
         return null;
@@ -390,6 +443,11 @@ function translateNeutralWord(word) {
     const directTranslation = lookupDictionaryWord(word);
     if (directTranslation) {
         return directTranslation;
+    }
+
+    const numberTranslation = translateNumberToken(word);
+    if (numberTranslation) {
+        return numberTranslation;
     }
 
     const verbBaseTranslation = translateVerbBase(word);

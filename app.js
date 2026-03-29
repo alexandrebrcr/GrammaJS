@@ -14,6 +14,8 @@ let isDictionaryEditorInitialized = false;
 const LEXIQUE_STORAGE_KEY = 'grammajs-lexique-v1';
 const AUXILIAIRES_FUTUR = new Set(['vais', 'vas', 'va', 'allons', 'allez', 'vont']);
 const AUXILIAIRES_PASSE = new Set(['ai', 'as', 'a', 'avons', 'avez', 'ont', 'suis', 'es', 'est', 'sommes', 'etes', 'êtes', 'sont']);
+const NUMBER_TIER_VOWELS = ['a', 'e', 'i', 'o', 'u', 'y'];
+const NUMBER_PLACES_DESC = [100000, 10000, 1000, 100, 10, 1];
 
 const CONTRACTIONS = {
     j: 'je',
@@ -332,6 +334,41 @@ function translateLemma(lemma) {
     return key ? config.lexique[key] : null;
 }
 
+function applyTierVowel(baseWord, tierIndex) {
+    if (tierIndex < 0 || tierIndex >= NUMBER_TIER_VOWELS.length) {
+        return null;
+    }
+
+    const targetVowel = NUMBER_TIER_VOWELS[tierIndex];
+    const lastVowelMatch = baseWord.match(/[aeiouy]$/i);
+
+    if (lastVowelMatch) {
+        return `${baseWord.slice(0, -1)}${targetVowel}`;
+    }
+
+    return `${baseWord}${targetVowel}`;
+}
+
+function translateNumberPlace(digit, placeValue) {
+    const explicitKey = `${digit * placeValue}`;
+    const explicitTranslation = lookupDictionaryWord(explicitKey);
+    if (explicitTranslation) {
+        return explicitTranslation;
+    }
+
+    const unitTranslation = lookupDictionaryWord(`${digit}`);
+    if (!unitTranslation) {
+        return null;
+    }
+
+    const tierIndex = Math.round(Math.log10(placeValue));
+    if (!Number.isInteger(tierIndex) || tierIndex < 0 || tierIndex >= NUMBER_TIER_VOWELS.length) {
+        return null;
+    }
+
+    return applyTierVowel(unitTranslation, tierIndex);
+}
+
 function translateNumberToken(token) {
     if (!/^\d+$/.test(token)) {
         return null;
@@ -351,16 +388,15 @@ function translateNumberToken(token) {
         return lookupDictionaryWord('0');
     }
 
-    // Current dictionary carries rank words up to thousands.
-    if (numericValue > 9999) {
+    // 6 tiers of vowels => units to hundred-thousands.
+    if (numericValue > 999999) {
         return null;
     }
 
     let remainder = numericValue;
     const segments = [];
-    const places = [1000, 100, 10, 1];
 
-    for (const place of places) {
+    for (const place of NUMBER_PLACES_DESC) {
         const digit = Math.floor(remainder / place);
         remainder %= place;
 
@@ -368,8 +404,7 @@ function translateNumberToken(token) {
             continue;
         }
 
-        const key = place === 1 ? `${digit}` : `${digit * place}`;
-        const piece = lookupDictionaryWord(key);
+        const piece = translateNumberPlace(digit, place);
         if (!piece) {
             return null;
         }

@@ -6,6 +6,12 @@ let config = {
     }
 };
 
+let baseLexique = {};
+let dictionaryIndex = new Map();
+let verbFormIndex = new Map();
+let isDictionaryEditorInitialized = false;
+
+const LEXIQUE_STORAGE_KEY = 'grammajs-lexique-v1';
 const AUXILIAIRES_FUTUR = new Set(['vais', 'vas', 'va', 'allons', 'allez', 'vont']);
 const AUXILIAIRES_PASSE = new Set(['ai', 'as', 'a', 'avons', 'avez', 'ont', 'suis', 'es', 'est', 'sommes', 'etes', 'êtes', 'sont']);
 
@@ -33,7 +39,7 @@ const IRREGULAR_VERB_FORMS = {
         imperfect: ['avais', 'avais', 'avait', 'avions', 'aviez', 'avaient'],
         participle: ['eu', 'eue', 'eus', 'eues']
     },
-    être: {
+    etre: {
         present: ['suis', 'es', 'est', 'sommes', 'etes', 'êtes', 'sont'],
         future: ['serai', 'seras', 'sera', 'serons', 'serez', 'seront'],
         imperfect: ['etais', 'etais', 'etait', 'etions', 'etiez', 'etaient'],
@@ -72,7 +78,7 @@ const IRREGULAR_VERB_FORMS = {
     boire: {
         present: ['bois', 'bois', 'boit', 'buvons', 'buvez', 'boivent'],
         future: ['boirai', 'boiras', 'boira', 'boirons', 'boirez', 'boiront'],
-        imperfect: ['buvais', 'buvais', 'buvait', 'buvions', 'buviez', 'buvtaient'],
+        imperfect: ['buvais', 'buvais', 'buvait', 'buvions', 'buviez', 'buvaient'],
         participle: ['bu']
     },
     prendre: {
@@ -112,8 +118,8 @@ const IRREGULAR_VERB_FORMS = {
         participle: ['eteint']
     },
     rire: {
-        present: ['rie', 'ries', 'rit', 'rions', 'riez', 'rient'],
-        future: ['rirai', 'riras', 'rira', 'rirons', 'ririez', 'riront'],
+        present: ['ris', 'ris', 'rit', 'rions', 'riez', 'rient'],
+        future: ['rirai', 'riras', 'rira', 'rirons', 'rierez', 'riront'],
         imperfect: ['riais', 'riais', 'riait', 'riions', 'riiez', 'riaient'],
         participle: ['ri']
     },
@@ -125,21 +131,48 @@ const IRREGULAR_VERB_FORMS = {
     }
 };
 
-let dictionaryIndex = new Map();
-let verbFormIndex = new Map();
-
-fetch('dictionary.json')
-    .then((response) => response.json())
-    .then((data) => {
-        config = data;
-        rebuildIndexes();
-    })
-    .catch(() => {
-        rebuildIndexes();
-    });
-
 function normalizeLookup(value) {
     return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function resolveDictionaryKey(word) {
+    return dictionaryIndex.get(normalizeLookup(word)) || null;
+}
+
+function getStoredLexique() {
+    try {
+        const raw = localStorage.getItem(LEXIQUE_STORAGE_KEY);
+        if (!raw) {
+            return null;
+        }
+
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+            return null;
+        }
+
+        return parsed;
+    } catch {
+        return null;
+    }
+}
+
+function saveStoredLexique(lexique) {
+    localStorage.setItem(LEXIQUE_STORAGE_KEY, JSON.stringify(lexique));
+}
+
+function clearStoredLexique() {
+    localStorage.removeItem(LEXIQUE_STORAGE_KEY);
+}
+
+function setDictionaryStatus(message, isError = false) {
+    const statusEl = document.getElementById('dictionaryStatus');
+    if (!statusEl) {
+        return;
+    }
+
+    statusEl.textContent = message;
+    statusEl.classList.toggle('error', isError);
 }
 
 function rebuildIndexes() {
@@ -290,12 +323,12 @@ function tokenize(inputText) {
 }
 
 function lookupDictionaryWord(word) {
-    const key = dictionaryIndex.get(normalizeLookup(word));
+    const key = resolveDictionaryKey(word);
     return key ? config.lexique[key] : null;
 }
 
 function translateLemma(lemma) {
-    const key = dictionaryIndex.get(normalizeLookup(lemma));
+    const key = resolveDictionaryKey(lemma);
     return key ? config.lexique[key] : null;
 }
 
@@ -303,27 +336,182 @@ function getVerbInfo(word) {
     return verbFormIndex.get(normalizeLookup(word)) || null;
 }
 
-function translateVerbWord(word) {
-    const verbInfo = getVerbInfo(word);
-    if (!verbInfo) {
-        return null;
+function detectVerb(word) {
+    const info = getVerbInfo(word);
+    if (info) {
+        return info;
     }
 
-    const translation = translateLemma(verbInfo.lemma);
-    if (!translation) {
-        return null;
+    const key = resolveDictionaryKey(word);
+    if (key && looksLikeVerbLemma(key)) {
+        return { lemma: key, tense: 'infinitive' };
     }
 
-    if (verbInfo.tense === 'future') {
-        return `${config.grammaire.futur} ${translation}`;
-    }
-
-    if (verbInfo.tense === 'past') {
-        return `${config.grammaire.passe} ${translation}`;
-    }
-
-    return translation;
+    return null;
 }
+
+function translateVerbBase(word) {
+    const detectedVerb = detectVerb(word);
+    if (!detectedVerb) {
+        return null;
+    }
+
+    return translateLemma(detectedVerb.lemma);
+}
+
+function translateStandaloneWord(word) {
+    const directTranslation = lookupDictionaryWord(word);
+    if (directTranslation) {
+        return directTranslation;
+    }
+
+    const detectedVerb = detectVerb(word);
+    if (!detectedVerb) {
+        return null;
+    }
+
+    const baseTranslation = translateLemma(detectedVerb.lemma);
+    if (!baseTranslation) {
+        return null;
+    }
+
+    if (detectedVerb.tense === 'future') {
+        return `${config.grammaire.futur} ${baseTranslation}`;
+    }
+
+    if (detectedVerb.tense === 'past') {
+        return `${config.grammaire.passe} ${baseTranslation}`;
+    }
+
+    return baseTranslation;
+}
+
+function translateNeutralWord(word) {
+    const directTranslation = lookupDictionaryWord(word);
+    if (directTranslation) {
+        return directTranslation;
+    }
+
+    const verbBaseTranslation = translateVerbBase(word);
+    if (verbBaseTranslation) {
+        return verbBaseTranslation;
+    }
+
+    return `[${word}]`;
+}
+
+function findVerbAfterAuxiliary(words, startIndex, options = {}) {
+    const maxLookahead = options.maxLookahead || 4;
+    const requirePast = Boolean(options.requirePast);
+
+    for (let j = startIndex + 1; j <= Math.min(words.length - 1, startIndex + maxLookahead); j++) {
+        const detectedVerb = detectVerb(words[j]);
+        if (!detectedVerb) {
+            continue;
+        }
+
+        if (requirePast && detectedVerb.tense !== 'past') {
+            continue;
+        }
+
+        return { index: j, detectedVerb };
+    }
+
+    return null;
+}
+
+function initializeDictionaryEditor() {
+    if (isDictionaryEditorInitialized) {
+        return;
+    }
+
+    const openButton = document.getElementById('openDictionaryEditor');
+    const closeButton = document.getElementById('closeDictionaryEditor');
+    const saveButton = document.getElementById('saveDictionary');
+    const resetButton = document.getElementById('resetDictionary');
+    const modal = document.getElementById('dictionaryModal');
+    const editor = document.getElementById('dictionaryEditor');
+
+    if (!openButton || !closeButton || !saveButton || !resetButton || !modal || !editor) {
+        return;
+    }
+
+    const refreshEditor = () => {
+        editor.value = JSON.stringify(config.lexique, null, 2);
+    };
+
+    openButton.addEventListener('click', () => {
+        refreshEditor();
+        modal.hidden = false;
+    });
+
+    closeButton.addEventListener('click', () => {
+        modal.hidden = true;
+    });
+
+    saveButton.addEventListener('click', () => {
+        try {
+            const parsed = JSON.parse(editor.value);
+            if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+                throw new Error('Format invalide. Le dictionnaire doit être un objet JSON clé/valeur.');
+            }
+
+            const cleaned = {};
+            Object.keys(parsed).forEach((key) => {
+                if (typeof parsed[key] === 'string' && key.trim()) {
+                    cleaned[key.trim()] = parsed[key].trim();
+                }
+            });
+
+            config.lexique = cleaned;
+            saveStoredLexique(config.lexique);
+            rebuildIndexes();
+            modal.hidden = true;
+            setDictionaryStatus('Dictionnaire enregistré localement.');
+        } catch (error) {
+            setDictionaryStatus(error.message || 'Erreur de format JSON.', true);
+        }
+    });
+
+    resetButton.addEventListener('click', () => {
+        config.lexique = { ...baseLexique };
+        clearStoredLexique();
+        rebuildIndexes();
+        refreshEditor();
+        setDictionaryStatus('Dictionnaire réinitialisé sur la version intégrée.');
+    });
+
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.hidden = true;
+        }
+    });
+
+    isDictionaryEditorInitialized = true;
+}
+
+fetch('dictionary.json')
+    .then((response) => response.json())
+    .then((data) => {
+        config.grammaire = data.grammaire || config.grammaire;
+        baseLexique = { ...(data.lexique || {}) };
+
+        const storedLexique = getStoredLexique();
+        config.lexique = storedLexique || { ...baseLexique };
+
+        rebuildIndexes();
+        initializeDictionaryEditor();
+
+        if (storedLexique) {
+            setDictionaryStatus('Version locale du dictionnaire chargée.');
+        }
+    })
+    .catch(() => {
+        config.lexique = getStoredLexique() || {};
+        rebuildIndexes();
+        initializeDictionaryEditor();
+        setDictionaryStatus('Le dictionnaire distant est indisponible.', true);
+    });
 
 function handleTranslate() {
     const inputText = document.getElementById('sourceText').value;
@@ -332,35 +520,39 @@ function handleTranslate() {
 
     for (let i = 0; i < words.length; i++) {
         const word = words[i];
-        const nextWord = words[i + 1];
 
-        if (AUXILIAIRES_FUTUR.has(word) && nextWord) {
-            const translation = translateVerbWord(nextWord) || lookupDictionaryWord(nextWord) || `[${nextWord}]`;
-            result.push(config.grammaire.futur, translation.replace(/^efu\s+/, ''));
-            i++;
-            continue;
+        if (AUXILIAIRES_FUTUR.has(word)) {
+            const verbMatch = findVerbAfterAuxiliary(words, i, { maxLookahead: 4, requirePast: false });
+            if (verbMatch) {
+                result.push(config.grammaire.futur);
+
+                for (let j = i + 1; j < verbMatch.index; j++) {
+                    result.push(translateNeutralWord(words[j]));
+                }
+
+                result.push(translateVerbBase(words[verbMatch.index]) || `[${words[verbMatch.index]}]`);
+                i = verbMatch.index;
+                continue;
+            }
         }
 
-        if (AUXILIAIRES_PASSE.has(word) && nextWord) {
-            const translation = translateVerbWord(nextWord) || lookupDictionaryWord(nextWord) || `[${nextWord}]`;
-            result.push(config.grammaire.passe, translation.replace(/^emas\s+/, ''));
-            i++;
-            continue;
+        if (AUXILIAIRES_PASSE.has(word)) {
+            const verbMatch = findVerbAfterAuxiliary(words, i, { maxLookahead: 4, requirePast: true });
+            if (verbMatch) {
+                result.push(config.grammaire.passe);
+
+                for (let j = i + 1; j < verbMatch.index; j++) {
+                    result.push(translateNeutralWord(words[j]));
+                }
+
+                result.push(translateVerbBase(words[verbMatch.index]) || `[${words[verbMatch.index]}]`);
+                i = verbMatch.index;
+                continue;
+            }
         }
 
-        const directTranslation = lookupDictionaryWord(word);
-        if (directTranslation) {
-            result.push(directTranslation);
-            continue;
-        }
-
-        const verbTranslation = translateVerbWord(word);
-        if (verbTranslation) {
-            result.push(verbTranslation);
-            continue;
-        }
-
-        result.push(`[${word}]`);
+        const translatedWord = translateStandaloneWord(word);
+        result.push(translatedWord || `[${word}]`);
     }
 
     document.getElementById('result').innerText = result.join(' ');

@@ -32,15 +32,67 @@
                 <textarea id="sourceText" placeholder="Entrez du français..."></textarea>
                 <button onclick="handleTranslate()">Traduire avec GrammaJS</button>
                 <div id="result" aria-live="polite"></div>
+                <div class="card-actions">
+                    <button type="button" id="openDictionaryEditor" class="secondary-button">Modifier le
+                        dictionnaire</button>
+                </div>
+                <p id="dictionaryStatus" class="status-text" aria-live="polite"></p>
             </section>
         </main>
+    </div>
+
+    <div class="dictionary-modal" id="dictionaryModal" hidden>
+        <div class="dictionary-panel">
+            <h2>Dictionnaire Meniki</h2>
+            <p>Modifiez le JSON puis enregistrez. Les changements sont stockés localement sur cet appareil.</p>
+            <textarea id="dictionaryEditor" spellcheck="false"></textarea>
+            <div class="dictionary-actions">
+                <button type="button" id="saveDictionary">Enregistrer</button>
+                <button type="button" id="resetDictionary" class="secondary-button">Réinitialiser</button>
+                <button type="button" id="closeDictionaryEditor" class="secondary-button">Fermer</button>
+            </div>
+        </div>
     </div>
 
     <script src="app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(() => { });
+                let hasReloadedForUpdate = false;
+
+                navigator.serviceWorker.register('sw.js').then((registration) => {
+                    const askForUpdate = () => {
+                        registration.update().catch(() => { });
+                        if (registration.waiting) {
+                            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                        }
+                    };
+
+                    askForUpdate();
+
+                    registration.addEventListener('updatefound', () => {
+                        const installing = registration.installing;
+                        if (!installing) {
+                            return;
+                        }
+
+                        installing.addEventListener('statechange', () => {
+                            if (installing.state === 'installed' && navigator.serviceWorker.controller && registration.waiting) {
+                                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                            }
+                        });
+                    });
+
+                    navigator.serviceWorker.addEventListener('controllerchange', () => {
+                        if (!hasReloadedForUpdate) {
+                            hasReloadedForUpdate = true;
+                            window.location.reload();
+                        }
+                    });
+
+                    window.addEventListener('online', askForUpdate);
+                    setInterval(askForUpdate, 5 * 60 * 1000);
+                }).catch(() => { });
             });
         }
     </script>

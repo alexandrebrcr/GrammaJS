@@ -1,4 +1,4 @@
-const CACHE_NAME = 'grammajs-v6';
+const CACHE_NAME = 'grammajs-v7';
 const ASSETS = [
     './',
     './index.html',
@@ -30,5 +30,32 @@ self.addEventListener('message', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-    e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
+    if (e.request.method !== 'GET') {
+        return;
+    }
+
+    const requestUrl = new URL(e.request.url);
+    if (requestUrl.origin !== self.location.origin) {
+        return;
+    }
+
+    e.respondWith(
+        fetch(e.request)
+            .then((networkResponse) => {
+                const responseClone = networkResponse.clone();
+                caches.open(CACHE_NAME).then((cache) => cache.put(e.request, responseClone));
+                return networkResponse;
+            })
+            .catch(() => caches.match(e.request).then((cachedResponse) => {
+                if (cachedResponse) {
+                    return cachedResponse;
+                }
+
+                if (e.request.mode === 'navigate') {
+                    return caches.match('./index.html');
+                }
+
+                return new Response('', { status: 404, statusText: 'Not Found' });
+            }))
+    );
 });
